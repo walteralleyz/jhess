@@ -23,12 +23,6 @@ html {
     flex-direction: row;
 }
 
-.kill-counter {
-    width: 250px;
-    background-color: #333;
-    min-height: calc(100vh - 89px);
-}
-
 .table-chess {
     width: 450px;
     height: 450px;
@@ -59,17 +53,40 @@ html {
     text-align: center;
 }
 
-.block .w, .block .b {
+.block .y, .block .r {
     font-size: 2.5rem;
     text-shadow: 0 0 1px rgba(0, 0, 0, 0.8);
 }
 
-.block .w {
+.block .y {
     color: #f1ec54;
 }
 
-.block .b {
+.block .r {
     color: #eb2929;
+}
+
+.kill-counter {
+    width: 250px;
+    background-color: #333;
+    min-height: calc(100vh - 89px);
+    padding: 0 16px;
+}
+
+.kill-counter h3 {
+    color: #fff;
+    text-align: center;
+    margin: 16px 0;
+}
+
+.kill-counter .kill-zone {
+    border: 1px dashed #fff;
+    margin-bottom: 16px;
+}
+
+.kill-zone .mdi {
+    color: #fff;
+    font-size: 2rem;
 }
 
 @media only screen and (max-width: 920px) {
@@ -93,7 +110,7 @@ html {
         background-color: #ddd;
     }
 
-    .block .w, .block .b {
+    .block .y, .block .r {
         font-size: 1.5rem;
         text-shadow: 0 0 1px rgba(0, 0, 0, 0.8);
     }
