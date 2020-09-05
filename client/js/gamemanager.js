@@ -42,13 +42,14 @@ export class GameManager extends BlockManager {
         this.update();
     }
 
-    canMove(piece, move, block, row, selected) {
+    canMove(piece, move, block, row, selected, matrix) {
         return this.moves.moveRules(
             piece,
             block.getAttribute("index"),
             row.getAttribute("index"),
             move,
-            selected
+            selected,
+            matrix
         )();
     }
 
@@ -75,7 +76,8 @@ export class GameManager extends BlockManager {
                             "kill",
                             block,
                             row,
-                            this.selected
+                            this.selected,
+                            this.matrix
                         )
                     ) {
                         this.kill(row, block, child);
@@ -94,7 +96,8 @@ export class GameManager extends BlockManager {
                         "move",
                         block,
                         row,
-                        this.selected
+                        this.selected,
+                        this.matrix
                     )
                 ) {
                     this.move(row, block);
@@ -127,7 +130,7 @@ export class GameManager extends BlockManager {
 
     notHighLight() {
         const id = this.getSelected();
-        id && document.getElementById(id).classList.remove('highlight');
+        if(id) document.getElementById(id).classList.remove('highlight');
     }
 
     attachEvent() {

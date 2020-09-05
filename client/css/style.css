@@ -55,9 +55,14 @@ html {
 }
 
 .highlight {
-    box-shadow: 0 0 1px 3px #f32121;
+    box-shadow: 0 0 1px 3px #216ef3;
     transform: scale(1.1);
+    background-color: #216ef3 !important;
     opacity: 0.8;
+}
+
+.highlight span {
+    color: #fff !important;
 }
 
 .block .y, .block .r {
