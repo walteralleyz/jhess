@@ -1,0 +1,25 @@
+{
+  "name": "jhess",
+  "version": "1.0.0",
+  "description": "**A Chess written in Vanilla Javascript**",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/walteralleyz/jhess.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/walteralleyz/jhess/issues"
+  },
+  "homepage": "https://github.com/walteralleyz/jhess#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "http": "0.0.1-security"
+  }
+}

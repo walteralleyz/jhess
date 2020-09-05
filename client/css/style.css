@@ -91,27 +91,34 @@ html {
 
 @media only screen and (max-width: 920px) {
     .container {
-        justify-content: center;
+        flex-direction: column;
+        align-items: center;
     }
 
     .kill-counter {
-        display: none;
+        min-height: 0;
+        width: 100%;
+    }
+
+    .kill-counter .kill-zone {
+        border: none;
     }
 
     .table-chess {
-        height: 250px;
-        width: 250px;
+        height: 300px;
+        width: 300px;
         transform: translateX(0);
+        margin-bottom: 16px;
     }
 
     .table-chess .row .block {
-        width: calc(250px / 8);
-        height: calc(250px / 8);
+        width: calc(300px / 8);
+        height: calc(300px / 8);
         background-color: #ddd;
     }
 
     .block .y, .block .r {
-        font-size: 1.5rem;
+        font-size: 1.65rem;
         text-shadow: 0 0 1px rgba(0, 0, 0, 0.8);
     }
 }
