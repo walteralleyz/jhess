@@ -27,7 +27,7 @@ class Game {
 
     player = "y";
     selected = {
-        color: "",
+        color: this.player,
         piece: "",
         row: 0,
         col: 0,
@@ -37,6 +37,27 @@ class Game {
         y: [],
         r: [],
     };
+
+    moveRules = chess =>
+        ({
+            "pawn": () => {
+                const bIndex = +chess.target.getAttribute('index');
+                const rIndex = +chess.target.parentNode.getAttribute('index');
+                const increment = this.selected.color === 'y' ? 1 : -1;
+
+                if(chess.action === 'move') {
+                    if(rIndex !== (+this.selected.row + increment)) return false;
+                    if(bIndex !== (+this.selected.col)) return false;
+
+                    return true;
+                } else {
+                    if(rIndex !== (+this.selected.row + increment)) return false;
+                    if(bIndex !== (+this.selected.col + 1) && bIndex !== (+this.selected.col - 1)) return false;
+
+                    return true;
+                }
+            },
+        }[chess.piece || false]);
 
     setup() {
         this.showMessage();
@@ -67,12 +88,13 @@ class Game {
     showMessage(message) {
         const messageBox = document.querySelector("span");
 
-        if(message) {
+        if (message) {
             messageBox.textContent = message;
-            messageBox.style.backgroundColor = "gray";    
+            messageBox.style.backgroundColor = "gray";
         } else {
             messageBox.textContent = `Player ${this.player.toUpperCase()} now!`;
-            messageBox.style.backgroundColor = this.player === "y" ? "gold" : "red";
+            messageBox.style.backgroundColor =
+                this.player === "y" ? "gold" : "red";
         }
     }
 
@@ -80,23 +102,69 @@ class Game {
         if (!this.gameEnd) {
             const block = e.currentTarget;
             const row = block.parentNode;
-            const piece = block.childNodes[0] || undefined;
+            const piece = this.matrix[row.getAttribute("index")][
+                block.getAttribute("index")
+            ];
+
+            let canMove = action => {
+                return this.moveRules({
+                    piece: this.selected.piece,
+                    target: block,
+                    action
+                })()
+            };
 
             if (piece) {
-                const [color, vendor, chess] = piece.classList.value.split(" ");
+                const [color, chess] = piece.split("-");
 
-                if (color == this.player) {
+                if (color === this.player) {
                     this.selected.color = color;
-                    this.selected.piece = chess.split("-")[2];
+                    this.selected.piece = chess;
                     this.selected.col = block.getAttribute("index");
                     this.selected.row = row.getAttribute("index");
-                } else {
-                    this.drop(e);
+
+                } else if(color !== this.player && this.selected.piece) {
+                    if(!canMove('kill')) alert("Cant move this way");
+                    else return this.drop(e);
                 }
-            } else {
-                this.drop(e);
+
+                return false;
+            } else if(this.selected.piece) {
+                if(canMove('move')) return this.drop(e);
+                alert("Cant move this way!");
             }
-        } else console.log("teste");
+        }
+    }
+
+    drop(e) {
+        const block = e.currentTarget;
+        const row = block.parentNode;
+
+        const child = this.matrix[row.getAttribute("index")][
+            block.getAttribute("index")
+        ];
+
+        if (this.selected.piece) {
+            this.clearBlock(row, block);
+
+            if (!block.childElementCount) {
+                this.changePlayer();
+            } else {
+                if (child && child.indexOf(this.player) === -1) {
+                    const piece = child.split("-")[1];
+
+                    this.moveRules({
+                        piece: this.selected.piece,
+                        target: block,
+                        action: 'kill'
+                    })();
+
+                    this.kill(piece);
+                    this.changePlayer();
+                    this.isItKing(piece);
+                }
+            }
+        }
     }
 
     clearBlock(row, block) {
@@ -114,56 +182,36 @@ class Game {
         const yKillZone = document.querySelector("#kill-zone-y .pieces");
         const rKillZone = document.querySelector("#kill-zone-r .pieces");
 
-        this.clearKillZone(yKillZone);
-        this.clearKillZone(rKillZone);
+        this.clearKillZone();
+
+        const createSpan = (p) => {
+            const span = document.createElement("span");
+            span.classList.add("mdi", "mdi-chess-" + p);
+
+            return span;
+        };
 
         for (let p of this.killZone.y) {
-            const span = document.createElement("span");
-            span.classList.add("mdi", p);
-            yKillZone.appendChild(span);
+            yKillZone.appendChild(createSpan(p));
         }
 
         for (let p of this.killZone.r) {
-            const span = document.createElement("span");
-            span.classList.add("mdi", p);
-            rKillZone.appendChild(span);
+            rKillZone.appendChild(createSpan(p));
         }
     }
 
-    clearKillZone(zone) {
-        zone.innerHTML = "";
+    clearKillZone() {
+        const yKillZone = document.querySelector("#kill-zone-y .pieces");
+        const rKillZone = document.querySelector("#kill-zone-r .pieces");
+
+        yKillZone.innerHTML = "";
+        rKillZone.innerHTML = "";
     }
 
     isItKing(piece) {
         if (piece.indexOf("king") !== -1) {
             this.gameEnd = true;
             this.showMessage("Game is end!");
-        }
-    }
-
-    drop(e) {
-        const block = e.currentTarget;
-        const row = block.parentNode;
-
-        const child = block.childNodes[0] || undefined;
-
-        if (this.selected.piece) {
-            this.clearBlock(row, block);
-
-            if (!block.childElementCount) {
-                this.changePlayer();
-            } else {
-                if (
-                    child &&
-                    child.classList.value.indexOf(this.player) === -1
-                ) {
-                    const piece = child.classList.value.split(" ")[2];
-
-                    this.kill(piece);
-                    this.changePlayer();
-                    this.isItKing(piece);
-                }
-            }
         }
     }
 
