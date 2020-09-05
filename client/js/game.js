@@ -104,6 +104,7 @@ export class Game {
                     span.classList.add(color, "mdi", "mdi-chess-" + icon);
 
                     rowIterable[j].appendChild(span);
+                    rowIterable[j].id = `${icon}${i}${j}`;
                 }
             }
         }

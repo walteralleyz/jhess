@@ -16,6 +16,7 @@ export class GameManager extends BlockManager {
 
     update() {
         this.clearTable();
+        this.notHighLight();
         this.showMessage();
         this.mountChessTable();
 
@@ -65,6 +66,8 @@ export class GameManager extends BlockManager {
                     this.selected.piece = chess;
                     this.selected.col = block.getAttribute("index");
                     this.selected.row = row.getAttribute("index");
+
+                    this.highLight(this.selected.piece, this.selected.row, this.selected.col);
                 } else if (this.selected.piece) {
                     if (
                         this.canMove(
@@ -103,6 +106,28 @@ export class GameManager extends BlockManager {
 
             alert("Cant move this way!");
         }
+    }
+
+    getSelected() {
+        return localStorage.getItem("selected");
+    }
+
+    saveSelected(id) {
+        localStorage.setItem('selected', id);
+    }
+
+    highLight(piece, row, col) {
+        const toSelect = document.getElementById(`${piece}${row}${col}`);
+
+        this.notHighLight();
+
+        toSelect.classList.add('highlight');
+        this.saveSelected(`${piece}${row}${col}`);
+    }
+
+    notHighLight() {
+        const id = this.getSelected();
+        id && document.getElementById(id).classList.remove('highlight');
     }
 
     attachEvent() {
