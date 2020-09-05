@@ -1,4 +1,4 @@
-import {BlockManager} from './blockmanager.js';
+import { BlockManager } from "./blockmanager.js";
 
 export class GameManager extends BlockManager {
     constructor() {
@@ -6,7 +6,6 @@ export class GameManager extends BlockManager {
 
         this.handleClick = this.select;
     }
-
 
     gameEnd = false;
 
@@ -42,6 +41,16 @@ export class GameManager extends BlockManager {
         this.update();
     }
 
+    canMove(piece, move, block, row, selected) {
+        return this.moves.moveRules(
+            piece,
+            block.getAttribute("index"),
+            row.getAttribute("index"),
+            move,
+            selected
+        )();
+    }
+
     select(e) {
         if (!this.gameEnd) {
             const block = e.currentTarget;
@@ -56,11 +65,16 @@ export class GameManager extends BlockManager {
                     this.selected.piece = chess;
                     this.selected.col = block.getAttribute("index");
                     this.selected.row = row.getAttribute("index");
-
-                } else if(this.selected.piece) {
-                    const piece = child.split('-')[1];
-
-                    if(this.moves.moveRules(piece, block.getAttribute('index'), row.getAttribute('index'), 'kill', this.selected)()) {
+                } else if (this.selected.piece) {
+                    if (
+                        this.canMove(
+                            this.selected.piece,
+                            "kill",
+                            block,
+                            row,
+                            this.selected
+                        )
+                    ) {
                         this.kill(row, block, child);
                         this.changePlayer();
                         this.isKing(child);
@@ -70,8 +84,16 @@ export class GameManager extends BlockManager {
                 }
 
                 return false;
-            } else if(this.selected.piece) {
-                if(this.moves.moveRules(this.selected.piece, block.getAttribute('index'), row.getAttribute('index'), 'move', this.selected)()) {
+            } else if (this.selected.piece) {
+                if (
+                    this.canMove(
+                        this.selected.piece,
+                        "move",
+                        block,
+                        row,
+                        this.selected
+                    )
+                ) {
                     this.move(row, block);
                     this.changePlayer();
 
@@ -79,7 +101,7 @@ export class GameManager extends BlockManager {
                 }
             }
 
-            alert('Cant move this way!');
+            alert("Cant move this way!");
         }
     }
 
@@ -89,8 +111,9 @@ export class GameManager extends BlockManager {
 
         for (let i = 0; i < iterable.length; i++) {
             const rowIterable = [...iterable[i].childNodes];
-            
-            for(let block of rowIterable) block.onclick = e => this.select(e);
+
+            for (let block of rowIterable)
+                block.onclick = (e) => this.select(e);
         }
     }
 }
