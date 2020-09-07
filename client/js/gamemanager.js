@@ -19,6 +19,7 @@ export class GameManager extends BlockManager {
         this.notHighLight();
         this.showMessage();
         this.mountChessTable();
+        this.moves.isCheck(this.matrix, this.player);
 
         this.attachEvent();
     }

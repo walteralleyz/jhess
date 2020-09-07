@@ -49,6 +49,197 @@ export class Moves {
         return matrix[rowIndex][colIndex] === 0;
     }
 
+    isCheck(matrix, player) {
+        const kingIndex = this.findKing(matrix, player);
+        this.isKingSecure(matrix, player, kingIndex);
+    }
+
+    isKingSurrounded(matrix, player, king) {
+        const nextRow = +king[0] + 1 <= 7 ? +king[0] + 1 : undefined;
+        const previousRow = king[0] - 1 >= 0 ? king[0] - 1 : undefined;
+        const enemy = player === "y" ? "r" : "y";
+
+        let insecure = [];
+
+        if (nextRow) {
+            if (
+                (king[1] + 1 <= 7 && matrix[nextRow][king[1] + 1] === 0) ||
+                matrix[nextRow][king[1] + 1].includes(enemy)
+            )
+                insecure.push([nextRow, king[1] + 1]);
+            if (
+                (king[1] - 1 >= 0 && matrix[nextRow][king[1] - 1] === 0) ||
+                matrix[nextRow][king[1] - 1].includes(enemy)
+            )
+                insecure.push([nextRow, king[1] - 1]);
+            if (
+                matrix[nextRow][king[1]] === 0 ||
+                matrix[nextRow][king[1]].includes(enemy)
+            )
+                insecure.push([nextRow, king[1]]);
+        }
+
+        if (previousRow) {
+            if (
+                (king[1] + 1 <= 7 && matrix[previousRow][king[1] + 1] === 0) ||
+                matrix[previousRow][king[1] + 1].includes(enemy)
+            )
+                insecure.push([previousRow, king[1] + 1]);
+            if (
+                (king[1] - 1 >= 0 && matrix[previousRow][king[1] - 1] === 0) ||
+                matrix[previousRow][king[1] - 1].includes(enemy)
+            )
+                insecure.push([previousRow, king[1] - 1]);
+            if (
+                matrix[previousRow][king[1]] === 0 ||
+                matrix[previousRow][king[1]].includes(enemy)
+            )
+                insecure.push([previousRow, king[1]]);
+        }
+
+        if (
+            (king[1] + 1 <= 7 && matrix[king[0]][king[1] + 1] === 0) ||
+            matrix[king[0]][king[1] + 1].includes(enemy)
+        )
+            insecure.push([+king[0], king[1] + 1]);
+        if (
+            (king[1] - 1 >= 0 && matrix[king[0]][king[1] - 1] === 0) ||
+            matrix[king[0]][king[1] - 1].includes(enemy)
+        )
+            insecure.push([+king[0], king[1] - 1]);
+
+        return insecure;
+    }
+
+    isKingSecure(matrix, player, king) {
+        const enemy = player === "y" ? "r" : "y";
+        const secure = this.isKingSurrounded(matrix, player, king);
+
+        let enemyCoordinates = [];
+
+        for (let v of secure) {
+            if (v[0] !== +king[0] && v[1] === +king[1]) {
+                for (let i = v[0]; i <= 7; i++) {
+                    if (matrix[i][v[1]]) {
+                        if (matrix[i][v[1]].startsWith(player)) break;
+                        else if (
+                            matrix[i][v[1]] === `${enemy}-rook` ||
+                            matrix[i][v[1]] === `${enemy}-queen`
+                        ) {
+                            enemyCoordinates.push([i, v[1]]);
+                        }
+                    }
+                }
+
+                for (let i = v[0]; i >= 0; i--) {
+                    if (matrix[i][v[1]]) {
+                        if (matrix[i][v[1]].startsWith(player)) break;
+                        else if (
+                            matrix[i][v[1]] === `${enemy}-rook` ||
+                            matrix[i][v[1]] === `${enemy}-queen`
+                        ) {
+                            enemyCoordinates.push([i, v[1]]);
+                        }
+                    }
+                }
+            }
+
+            if (v[0] === +king[0] && v[1] !== +king[1]) {
+                for (let i = v[1]; i >= 0; i--) {
+                    if (matrix[v[0]][i]) {
+                        if (matrix[v[0]][i].startsWith(player)) break;
+                        else if (
+                            matrix[v[0]][i] === `${enemy}-rook` ||
+                            matrix[i][v[1]] === `${enemy}-queen`
+                        ) {
+                            enemyCoordinates.push([v[0], i]);
+                        }
+                    }
+                }
+
+                for (let i = v[1]; i <= 7; i++) {
+                    if (matrix[v[0]][i]) {
+                        if (matrix[v[0]][i].startsWith(player)) break;
+                        else if (
+                            matrix[v[0]][i] === `${enemy}-rook` ||
+                            matrix[i][v[1]] === `${enemy}-queen`
+                        ) {
+                            enemyCoordinates.push([v[0], i]);
+                        }
+                    }
+                }
+            }
+
+            if (v[0] !== +king[0] && v[1] !== +king[1]) {
+                let col = v[1];
+
+                if (v[0] > king[0]) {
+                    for (let i = v[0]; i <= 7; i++) {
+                        if (col > king[1]) {
+                            if (i === v[0]) col = v[1];
+                            if (col > 7) break;
+                            if (
+                            matrix[i][col] 
+                            && (matrix[i][col] === `${enemy}-queen`
+                            || matrix[i][col] === `${enemy}-bishop`)
+                            )
+                                enemyCoordinates.push([i, col]);
+                            col += 1;
+                        } else {
+                            if (i === v[0]) col = v[1];
+                            if (col < 0) break;
+                            if (
+                            matrix[i][col] 
+                            && (matrix[i][col] === `${enemy}-queen` ||
+                                matrix[i][col] === `${enemy}-bishop`)
+                            )
+                                enemyCoordinates.push([i, col]);
+                            col -= 1;
+                        }
+                    }
+                }
+
+                if (v[0] < king[0]) {
+                    for (let i = v[0]; i >= 0; i--) {
+                        if (col > king[1]) {
+                            if (i === v[0]) col = v[1];
+                            if (col > 7) break;
+                            if (
+                                (matrix[i][col] &&
+                                    matrix[i][col] === `${enemy}-queen`) ||
+                                matrix[i][col] === `${enemy}-bishop`
+                            )
+                                enemyCoordinates.push([i, col]);
+                            col += 1;
+                        } else {
+                            if (i === v[0]) col = v[1];
+                            if (col < v[0]) break;
+                            if (
+                                (matrix[i][col] &&
+                                    matrix[i][col] === `${enemy}-queen`) ||
+                                matrix[i][col] === `${enemy}-bishop`
+                            )
+                                enemyCoordinates.push([i, col]);
+                            col -= 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        console.log(enemyCoordinates);
+
+        return enemyCoordinates;
+    }
+
+    findKing(matrix, player) {
+        for (let row in matrix) {
+            const colIndex = matrix[row].indexOf(`${player}-king`);
+
+            if (colIndex !== -1) return [row, colIndex];
+        }
+    }
+
     moveRules = (piece, bIndex, rIndex, action, selected, matrix) =>
         ({
             pawn: () => {

@@ -35,6 +35,11 @@ export class Game {
         r: [],
     };
 
+    king = {
+        y: [],
+        r: []
+    };
+
     moves = new Moves();
 
     setup() {
