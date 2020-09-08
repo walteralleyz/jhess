@@ -5,14 +5,12 @@ export class Moves {
         let notBlocked = true;
 
         while (i !== +rowIndex) {
-            const decrement = Math.abs(i - selected.row);
-            c = c > colIndex ? c - decrement : c + decrement;
-
-            if (c != selected.col && matrix[i][c]) {
+            if (i !== +selected.row && c !== +selected.col && matrix[i][c]) {
                 notBlocked = false;
                 break;
             }
 
+            c = c > colIndex ? c - 1 : c + 1;
             i = i > rowIndex ? i - 1 : i + 1;
         }
 
@@ -51,177 +49,158 @@ export class Moves {
 
     isCheck(matrix, player) {
         const kingIndex = this.findKing(matrix, player);
-        this.isKingSecure(matrix, player, kingIndex);
+        const check = this.isKingSecure(matrix, player, kingIndex);
+
+        if (check.length) this.saveCheckStatus(check);
+        else localStorage.removeItem("check");
     }
 
-    isKingSurrounded(matrix, player, king) {
-        const nextRow = +king[0] + 1 <= 7 ? +king[0] + 1 : undefined;
-        const previousRow = king[0] - 1 >= 0 ? king[0] - 1 : undefined;
-        const enemy = player === "y" ? "r" : "y";
+    saveCheckStatus(obj) {
+        localStorage.setItem("check", JSON.stringify({ checkArray: obj }));
+    }
 
-        let insecure = [];
+    getCheckStatus() {
+        const check = JSON.parse(localStorage.getItem("check"));
 
-        if (nextRow) {
-            if (
-                (king[1] + 1 <= 7 && matrix[nextRow][king[1] + 1] === 0) ||
-                matrix[nextRow][king[1] + 1].includes(enemy)
-            )
-                insecure.push([nextRow, king[1] + 1]);
-            if (
-                (king[1] - 1 >= 0 && matrix[nextRow][king[1] - 1] === 0) ||
-                matrix[nextRow][king[1] - 1].includes(enemy)
-            )
-                insecure.push([nextRow, king[1] - 1]);
-            if (
-                matrix[nextRow][king[1]] === 0 ||
-                matrix[nextRow][king[1]].includes(enemy)
-            )
-                insecure.push([nextRow, king[1]]);
-        }
-
-        if (previousRow) {
-            if (
-                (king[1] + 1 <= 7 && matrix[previousRow][king[1] + 1] === 0) ||
-                matrix[previousRow][king[1] + 1].includes(enemy)
-            )
-                insecure.push([previousRow, king[1] + 1]);
-            if (
-                (king[1] - 1 >= 0 && matrix[previousRow][king[1] - 1] === 0) ||
-                matrix[previousRow][king[1] - 1].includes(enemy)
-            )
-                insecure.push([previousRow, king[1] - 1]);
-            if (
-                matrix[previousRow][king[1]] === 0 ||
-                matrix[previousRow][king[1]].includes(enemy)
-            )
-                insecure.push([previousRow, king[1]]);
-        }
-
-        if (
-            (king[1] + 1 <= 7 && matrix[king[0]][king[1] + 1] === 0) ||
-            matrix[king[0]][king[1] + 1].includes(enemy)
-        )
-            insecure.push([+king[0], king[1] + 1]);
-        if (
-            (king[1] - 1 >= 0 && matrix[king[0]][king[1] - 1] === 0) ||
-            matrix[king[0]][king[1] - 1].includes(enemy)
-        )
-            insecure.push([+king[0], king[1] - 1]);
-
-        return insecure;
+        return check || false;
     }
 
     isKingSecure(matrix, player, king) {
         const enemy = player === "y" ? "r" : "y";
-        const secure = this.isKingSurrounded(matrix, player, king);
 
-        let enemyCoordinates = [];
+        let enemyCoordinates = {
+            top: "0",
+            bottom: "0",
+            left: "0",
+            right: "0",
+            topLeft: "0",
+            topRight: "0",
+            bottomLeft: "0",
+            bottomRight: "0",
+        };
 
-        for (let v of secure) {
-            if (v[0] !== +king[0] && v[1] === +king[1]) {
-                for (let i = v[0]; i <= 7; i++) {
-                    if (matrix[i][v[1]]) {
-                        if (matrix[i][v[1]].startsWith(player)) break;
+        if(matrix[+king[0] - 1]) {
+            if(matrix[+king[0] - 1][+king[1] - 1] !== 0 && matrix[+king[0] - 1][+king[1] - 1].startsWith(player)) enemyCoordinates.bottomLeft = 'secured';
+            if(matrix[+king[0] - 1][+king[1] + 1] !== 0 && matrix[+king[0] - 1][+king[1] + 1].startsWith(player)) enemyCoordinates.bottomRight = 'secured';
+            if ((matrix[+king[0] - 1][king[1]] !== 0 && matrix[+king[0] - 1][king[1]].startsWith(player)) || matrix[+king[0] - 1][king[1]] === undefined) enemyCoordinates.bottom = "secured";
+        }
+
+        if(matrix[+king[0] + 1]) {
+            if(matrix[+king[0] + 1][+king[1] - 1] !== 0 && matrix[+king[0] + 1][+king[1] - 1].startsWith(player)) enemyCoordinates.topLeft = 'secured';
+            if(matrix[+king[0] + 1][+king[1] + 1] !== 0 && matrix[+king[0] + 1][+king[1] + 1].startsWith(player)) enemyCoordinates.topRight = 'secured';
+            if ((matrix[+king[0] + 1][king[1]] !== 0 && matrix[+king[0] + 1][king[1]].startsWith(player)) || matrix[+king[0] + 1][king[1]] === undefined) enemyCoordinates.top = "secured";
+        }
+
+        if (
+            matrix[+king[0]][+king[1] - 1] !== 0 &&
+            matrix[+king[0]][+king[1] - 1].startsWith(player)
+        )
+            enemyCoordinates.left = "secured";
+        if (
+            matrix[+king[0]][+king[1] + 1] !== 0 &&
+            matrix[+king[0]][+king[1] + 1].startsWith(player)
+        )
+            enemyCoordinates.right = "secured";
+
+        for (let i = +king[0]; i <= 7; i++) {
+            for (let j = 0; j <= 7; j++) {
+                const row = Math.abs(i - king[0]);
+                const col = Math.abs(j - king[1]);
+
+                if (row > 0 && col === 0) {
+                    if (enemyCoordinates.top === "secured") continue;
+                    else if(matrix[i][j] !== 0 && matrix[i][j] === `${enemy}-rook` || matrix[i][j] === `${enemy}-queen`) enemyCoordinates.top = [i, j];
+                }
+
+                if (row === 0 && col > 0) {
+                    if (
+                        enemyCoordinates.left === "secured" &&
+                        enemyCoordinates.right === "secured"
+                    )
+                        continue;
+
+                    if (j < +king[1]) {
+                        if (enemyCoordinates.left === "secured") continue;
                         else if (
-                            matrix[i][v[1]] === `${enemy}-rook` ||
-                            matrix[i][v[1]] === `${enemy}-queen`
-                        ) {
-                            enemyCoordinates.push([i, v[1]]);
-                        }
+                            matrix[i][j] !== 0 &&
+                            (matrix[i][j] === `${enemy}-rook` ||
+                                matrix[i][j] === `${enemy}-queen`)
+                        )
+                            enemyCoordinates.left = [i, j];
+                    } else {
+                        if (enemyCoordinates.right === "secured") continue;
+                        else if (
+                            matrix[i][j] !== 0 &&
+                            (matrix[i][j] === `${enemy}-rook` ||
+                                matrix[i][j] === `${enemy}-queen`)
+                        )
+                            enemyCoordinates.right = [i, j];
                     }
                 }
 
-                for (let i = v[0]; i >= 0; i--) {
-                    if (matrix[i][v[1]]) {
-                        if (matrix[i][v[1]].startsWith(player)) break;
-                        else if (
-                            matrix[i][v[1]] === `${enemy}-rook` ||
-                            matrix[i][v[1]] === `${enemy}-queen`
-                        ) {
-                            enemyCoordinates.push([i, v[1]]);
-                        }
+                if (row === col) {
+                    if(enemyCoordinates.topLeft === 'secured' && enemyCoordinates.topRight === 'secured') continue;
+
+                    if(j < +king[1]) {
+                        if(enemyCoordinates.topLeft === 'secured') continue;
+                        else if(matrix[i][j] !== 0 && (matrix[i][j] === `${enemy}-bishop` || matrix[i][j] === `${enemy}-queen`)) enemyCoordinates.topLeft = [i, j];
+                    }
+
+                    else {
+                        if(enemyCoordinates.topRight === 'secured') continue;
+                        else if(matrix[i][j] !== 0 && (matrix[i][j] === `${enemy}-bishop` || matrix[i][j] === `${enemy}-queen`)) enemyCoordinates.topRight = [i, j];
                     }
                 }
             }
+        }
 
-            if (v[0] === +king[0] && v[1] !== +king[1]) {
-                for (let i = v[1]; i >= 0; i--) {
-                    if (matrix[v[0]][i]) {
-                        if (matrix[v[0]][i].startsWith(player)) break;
+        for (let i = +king[0]; i >= 0; i--) {
+            for (let j = 0; j <= 7; j++) {
+                const row = Math.abs(i - king[0]);
+                const col = Math.abs(j - king[1]);
+
+                if (row > 0 && col === 0) {
+                    if (enemyCoordinates.bottom === "secured") continue;
+                    else if(matrix[i][j] !== 0 && matrix[i][j] === `${enemy}-rook` || matrix[i][j] === `${enemy}-queen`) enemyCoordinates.top = [i, j];                    
+                }
+
+                if (row === 0 && col > 0) {
+                    if (
+                        enemyCoordinates.left === "secured" &&
+                        enemyCoordinates.right === "secured"
+                    )
+                        continue;
+
+                    if (j < +king[1]) {
+                        if (enemyCoordinates.left === "secured") continue;
                         else if (
-                            matrix[v[0]][i] === `${enemy}-rook` ||
-                            matrix[i][v[1]] === `${enemy}-queen`
-                        ) {
-                            enemyCoordinates.push([v[0], i]);
-                        }
-                    }
-                }
-
-                for (let i = v[1]; i <= 7; i++) {
-                    if (matrix[v[0]][i]) {
-                        if (matrix[v[0]][i].startsWith(player)) break;
+                            matrix[i][j] !== 0 &&
+                            (matrix[i][j] === `${enemy}-rook` ||
+                                matrix[i][j] === `${enemy}-queen`)
+                        )
+                            enemyCoordinates.left = [i, j];
+                    } else {
+                        if (enemyCoordinates.right === "secured") continue;
                         else if (
-                            matrix[v[0]][i] === `${enemy}-rook` ||
-                            matrix[i][v[1]] === `${enemy}-queen`
-                        ) {
-                            enemyCoordinates.push([v[0], i]);
-                        }
-                    }
-                }
-            }
-
-            if (v[0] !== +king[0] && v[1] !== +king[1]) {
-                let col = v[1];
-
-                if (v[0] > king[0]) {
-                    for (let i = v[0]; i <= 7; i++) {
-                        if (col > king[1]) {
-                            if (i === v[0]) col = v[1];
-                            if (col > 7) break;
-                            if (
-                            matrix[i][col] 
-                            && (matrix[i][col] === `${enemy}-queen`
-                            || matrix[i][col] === `${enemy}-bishop`)
-                            )
-                                enemyCoordinates.push([i, col]);
-                            col += 1;
-                        } else {
-                            if (i === v[0]) col = v[1];
-                            if (col < 0) break;
-                            if (
-                            matrix[i][col] 
-                            && (matrix[i][col] === `${enemy}-queen` ||
-                                matrix[i][col] === `${enemy}-bishop`)
-                            )
-                                enemyCoordinates.push([i, col]);
-                            col -= 1;
-                        }
+                            matrix[i][j] !== 0 &&
+                            (matrix[i][j] === `${enemy}-rook` ||
+                                matrix[i][j] === `${enemy}-queen`)
+                        )
+                            enemyCoordinates.right = [i, j];
                     }
                 }
 
-                if (v[0] < king[0]) {
-                    for (let i = v[0]; i >= 0; i--) {
-                        if (col > king[1]) {
-                            if (i === v[0]) col = v[1];
-                            if (col > 7) break;
-                            if (
-                                (matrix[i][col] &&
-                                    matrix[i][col] === `${enemy}-queen`) ||
-                                matrix[i][col] === `${enemy}-bishop`
-                            )
-                                enemyCoordinates.push([i, col]);
-                            col += 1;
-                        } else {
-                            if (i === v[0]) col = v[1];
-                            if (col < v[0]) break;
-                            if (
-                                (matrix[i][col] &&
-                                    matrix[i][col] === `${enemy}-queen`) ||
-                                matrix[i][col] === `${enemy}-bishop`
-                            )
-                                enemyCoordinates.push([i, col]);
-                            col -= 1;
-                        }
+                if (row === col) {
+                    if(enemyCoordinates.bottomLeft === 'secured' && enemyCoordinates.bottomRight === 'secured') continue;
+
+                    if(j < +king[1]) {
+                        if(enemyCoordinates.bottomLeft === 'secured') continue;
+                        else if(matrix[i][j] !== 0 && (matrix[i][j] === `${enemy}-bishop` || matrix[i][j] === `${enemy}-queen`)) enemyCoordinates.bottomLeft = [i, j];
+                    }
+
+                    else {
+                        if(enemyCoordinates.bottomRight === 'secured') continue;
+                        else if(matrix[i][j] !== 0 && (matrix[i][j] === `${enemy}-bishop` || matrix[i][j] === `${enemy}-queen`)) enemyCoordinates.bottomRight = [i, j];
                     }
                 }
             }

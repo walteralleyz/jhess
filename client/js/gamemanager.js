@@ -12,6 +12,7 @@ export class GameManager extends BlockManager {
     start() {
         this.setup();
         this.attachEvent();
+        this.resetLocalStorage();
     }
 
     update() {
@@ -19,9 +20,34 @@ export class GameManager extends BlockManager {
         this.notHighLight();
         this.showMessage();
         this.mountChessTable();
-        this.moves.isCheck(this.matrix, this.player);
+        this.isCheck();
 
         this.attachEvent();
+    }
+
+    resetLocalStorage() {
+        localStorage.removeItem('check');
+        localStorage.removeItem('selected');
+        localStorage.removeItem('checked');
+    }
+
+    isCheck() {
+        this.moves.isCheck(this.matrix, this.player);
+        const check = this.moves.getCheckStatus();
+
+        if(check) {
+            for(let array of check.checkArray) {
+                const piece = this.matrix[array[0]][array[1]].split('-')[1];
+
+                this.highLightDanger(piece, array[0], array[1]);
+            }
+        } else {
+            for(let row of document.getElementsByClassName("table-chess")[0].childNodes) {
+                for(let box of row.childNodes) {
+                    box.classList.remove("highlight-danger");
+                }
+            }
+        }
     }
 
     isKing(piece) {
@@ -120,13 +146,18 @@ export class GameManager extends BlockManager {
         localStorage.setItem('selected', id);
     }
 
-    highLight(piece, row, col) {
+    highLight(piece, row, col, className) {
         const toSelect = document.getElementById(`${piece}${row}${col}`);
 
         this.notHighLight();
 
-        toSelect.classList.add('highlight');
+        toSelect.classList.add(className || 'highlight');
         this.saveSelected(`${piece}${row}${col}`);
+    }
+
+    highLightDanger(piece, row, col) {
+        const toSelect = document.getElementById(`${piece}${row}${col}`);
+        toSelect.classList.add('highlight-danger');
     }
 
     notHighLight() {
