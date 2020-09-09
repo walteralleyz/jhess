@@ -35,11 +35,6 @@ export class Game {
         r: [],
     };
 
-    king = {
-        y: [],
-        r: []
-    };
-
     moves = new Moves();
 
     setup() {
@@ -110,6 +105,7 @@ export class Game {
 
                     rowIterable[j].appendChild(span);
                     rowIterable[j].id = `${icon}${i}${j}`;
+                    rowIterable[j].classList.remove('highlight-danger');
                 }
             }
         }

@@ -51,12 +51,11 @@ export class Moves {
         const kingIndex = this.findKing(matrix, player);
         const check = this.isKingSecure(matrix, player, kingIndex);
 
-        if (check.length) this.saveCheckStatus(check);
-        else localStorage.removeItem("check");
+        this.saveCheckStatus(check);
     }
 
     saveCheckStatus(obj) {
-        localStorage.setItem("check", JSON.stringify({ checkArray: obj }));
+        localStorage.setItem("check", JSON.stringify(obj));
     }
 
     getCheckStatus() {
@@ -205,8 +204,6 @@ export class Moves {
                 }
             }
         }
-
-        console.log(enemyCoordinates);
 
         return enemyCoordinates;
     }

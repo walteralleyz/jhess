@@ -1,13 +1,18 @@
 import { BlockManager } from "./blockmanager.js";
 
 export class GameManager extends BlockManager {
-    constructor() {
+    constructor(player, socket, id) {
         super();
 
         this.handleClick = this.select;
+        this.localPlayer = player;
+        this.id = id;
+        this.transport = socket;
     }
 
-    gameEnd = false;
+    localPlayer;
+    id;
+    transport;
 
     start() {
         this.setup();
@@ -15,14 +20,24 @@ export class GameManager extends BlockManager {
         this.resetLocalStorage();
     }
 
-    update() {
-        this.clearTable();
-        this.notHighLight();
-        this.showMessage();
-        this.mountChessTable();
-        this.isCheck();
+    emit(type, message) {
+        this.transport.emit(type, message);
+    }
 
-        this.attachEvent();
+    update() {
+        if(this.isKing()) {
+            this.clearTable();
+            this.notHighLight();
+            this.mountChessTable();
+            this.showMessage(`Game is end!`);
+            this.removeEvent();
+        } else {
+            this.clearTable();
+            this.notHighLight();
+            this.showMessage();
+            this.mountChessTable();
+            this.isCheck();
+        }
     }
 
     resetLocalStorage() {
@@ -34,27 +49,22 @@ export class GameManager extends BlockManager {
     isCheck() {
         this.moves.isCheck(this.matrix, this.player);
         const check = this.moves.getCheckStatus();
+        const checkKeys = Object.keys(check);
 
-        if(check) {
-            for(let array of check.checkArray) {
-                const piece = this.matrix[array[0]][array[1]].split('-')[1];
+        for(let keys of checkKeys) {
+            if(check[keys] !== '0' && check[keys] !== 'secured') {
+                let piece = this.matrix[check[keys][0]][check[keys][1]].split('-')[1];
 
-                this.highLightDanger(piece, array[0], array[1]);
-            }
-        } else {
-            for(let row of document.getElementsByClassName("table-chess")[0].childNodes) {
-                for(let box of row.childNodes) {
-                    box.classList.remove("highlight-danger");
-                }
+                document.getElementById(`${piece}${check[keys][0]}${check[keys][1]}`).classList.add('highlight-danger');
             }
         }
     }
 
-    isKing(piece) {
-        if (piece.indexOf("king") !== -1) {
-            this.gameEnd = true;
-            this.showMessage("Game is end!");
-        }
+    isKing() {
+        const enemy = this.player === 'y' ? 'r' : 'y';
+        const king = this.killZone[enemy].indexOf(`${this.player}-king`) !== -1;
+
+        return king;
     }
 
     changePlayer() {
@@ -81,7 +91,7 @@ export class GameManager extends BlockManager {
     }
 
     select(e) {
-        if (!this.gameEnd) {
+        if(this.localPlayer === this.player) {
             const block = e.currentTarget;
             const row = block.parentNode;
             const child = this.isFilled(row, block);
@@ -109,7 +119,6 @@ export class GameManager extends BlockManager {
                     ) {
                         this.kill(row, block, child);
                         this.changePlayer();
-                        this.isKing(child);
 
                         return false;
                     }
@@ -136,7 +145,7 @@ export class GameManager extends BlockManager {
 
             alert("Cant move this way!");
         }
-    }
+        }
 
     getSelected() {
         return localStorage.getItem("selected");
@@ -174,6 +183,18 @@ export class GameManager extends BlockManager {
 
             for (let block of rowIterable)
                 block.onclick = (e) => this.select(e);
+        }
+    }
+
+    removeEvent() {
+        const tableChess = document.querySelector(".table-chess");
+        const iterable = [...tableChess.childNodes];
+
+        for (let i = 0; i < iterable.length; i++) {
+            const rowIterable = [...iterable[i].childNodes];
+
+            for (let block of rowIterable)
+                block.onclick = () => null;
         }
     }
 }

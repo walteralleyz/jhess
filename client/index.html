@@ -6,12 +6,27 @@
     <title>Jhess</title>
     <link rel="stylesheet" href="./css/style.css">
     <link rel="stylesheet" href="./css/materialdesignicons.min.css">
+    <script src="./js/socket.io.js"></script>
 </head>
 <body>
     <nav class="message">
         <h1>JAVASCRIPT CHESS</h1>
         <span></span>
     </nav>
+
+    <div class="modal">
+        <div class="modal__content" style="display: none">
+            <h4>Choose Between Yellow or Red</h4>
+            <div>
+                <button class="modal__button--yellow" value="y">Yellow</button>
+                <button class="modal__button--red" value="r">Red</button>
+            </div>
+        </div>
+
+        <div class="modal__loading">
+            <p id="text"></p>
+        </div>
+    </div>
 
     <main class="container">
         <aside class="kill-counter">
