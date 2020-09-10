@@ -8,7 +8,7 @@ const uuid = require('uuid');
 
 const port = process.env.PORT || 3000;
 const GameManager = require('./controller/gamemanager');
-const { join, move, message, sendId } = require('./controller/socket');
+const { join, move, message, sendId, bot } = require('./controller/socket');
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -27,7 +27,9 @@ function emitStart(room, startPlayer) {
 
 io.on('connection', (socket) => {
     sendId(socket, io, uuid);
+    
     join(socket, rooms, GameManager, io, emitStart);
+    bot(socket, rooms, GameManager, io, emitStart);
     move(socket, rooms);
     message(socket, io);
 });

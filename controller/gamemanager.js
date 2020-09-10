@@ -74,6 +74,8 @@ class GameManager extends BlockManager {
 
                     return false;
                 }
+
+                this.transport.to(this.room).emit('update', JSON.stringify({ message: 'Não pode mover!', type: 'error' }));
             }
 
             return false;

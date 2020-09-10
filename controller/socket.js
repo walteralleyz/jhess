@@ -14,6 +14,25 @@ exports.join = (socket, container, Game, io, next) => {
     });
 }
 
+exports.bot = (socket, container, Game, io, next) => {
+    socket.on('bot', body => {
+        const { player, id } = JSON.parse(body);
+        const room = `${player}-${id}`;
+
+        socket.join(room, err => {
+            if(err) console.log(err);
+            else {
+                container[room] = {
+                    status: 'full',
+                    game: new Game(player, id, io, room)
+                };
+
+                next(room, container[room].game.player);
+            }
+        })
+    });
+};
+
 exports.create = (socket, container, room, body, io, Game, next) => {
     const { player, id } = JSON.parse(body);
 

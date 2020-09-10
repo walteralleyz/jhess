@@ -1,18 +1,21 @@
 import { BlockManager } from "./blockmanager.js";
 
 export class GameManager extends BlockManager {
-    constructor(player, socket, id) {
+    constructor(player, socket, id, bot) {
         super();
 
         this.handleClick = this.select;
         this.localPlayer = player;
         this.id = id;
         this.transport = socket;
+        this.bot = bot;
     }
 
     localPlayer;
     id;
     transport;
+    bot;
+    botSelected = false;
 
     start() {
         this.setup();
@@ -20,10 +23,17 @@ export class GameManager extends BlockManager {
         this.resetLocalStorage();
     }
 
+    rebuild() {
+        this.clearTable();
+        this.notHighLight();
+        this.mountChessTable();
+        this.updateKillZone();
+    }
+
     update(body) {
         if(body.type === 'error') {
             if(this.localPlayer === this.player) return alert(body.message);
-            return false;
+            if(this.localPlayer !== this.player && this.bot) this.selectBot();
         }
         else if(body.type === 'end') {
             const { matrix, killZone } = body.message;
@@ -31,11 +41,8 @@ export class GameManager extends BlockManager {
             this.matrix = matrix;
             this.killZone = killZone;
             
-            this.clearTable();
-            this.notHighLight();
-            this.mountChessTable();
-            this.updateKillZone();
             this.showMessage(`Game is end!`);
+            this.rebuild();
             this.removeEvent();
         } else {
             const { matrix, killZone } = body.message;
@@ -44,12 +51,11 @@ export class GameManager extends BlockManager {
             this.killZone = killZone;
 
             this.changePlayer();
-            this.clearTable();
-            this.notHighLight();
             this.showMessage();
-            this.mountChessTable();
-            this.updateKillZone();
+            this.rebuild();
             this.isCheck();
+
+            if(this.localPlayer !== this.player) this.selectBot();
         }
     }
 
@@ -103,6 +109,31 @@ export class GameManager extends BlockManager {
         }
     }
 
+    async selectBot() {
+        const rowIndex = Math.floor(Math.random() * 8);
+        const boxIndex = Math.floor(Math.random() * 8);
+        const roomId = localStorage.getItem('room');
+
+        const chess = this.matrix[rowIndex][boxIndex];
+
+        if(this.botSelected) {
+            if(chess === 0 || chess.split('-')[0] !== this.player) {
+                this.transport.emit('move', JSON.stringify({ boxIndex, rowIndex, roomId }));
+                this.botSelected = false;
+            }
+            else this.selectBot();
+        } else {
+            if(chess && chess.split('-')[0] === this.player) {
+                this.highLight(chess.split('-')[1], rowIndex, boxIndex);
+                await this.transport.emit('move', JSON.stringify({ boxIndex, rowIndex, roomId }));
+
+                this.botSelected = true;
+                this.selectBot();
+            }
+            else this.selectBot(); 
+        }
+    }
+
     getSelected() {
         return localStorage.getItem("selected");
     }
@@ -127,7 +158,7 @@ export class GameManager extends BlockManager {
 
     notHighLight() {
         const id = this.getSelected();
-        if(id) document.getElementById(id).classList.remove('highlight');
+        if(id !== null) document.getElementById(id).classList.remove('highlight');
     }
 
     attachEvent() {

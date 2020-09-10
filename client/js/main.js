@@ -1,5 +1,25 @@
 import {GameManager} from "./gamemanager.js";
 
+function socketStart(socket, game, modal) {
+    socket.on('start', body => {
+        game.setPlayer(body.startPlayer);
+        game.start();
+
+        localStorage.setItem('room', body.room);
+        modal.style.display = 'none';
+    });
+}
+
+function socketUpdate(socket, game) {
+    socket.on('update', body => {
+        game.update(JSON.parse(body));
+    });
+}
+
+function socketMessage(socket) {
+    socket.on('message', body => appendMessage(body.message, body.id));
+}
+
 function startGame(e, socket) {
     const player = e.currentTarget.value;
     const id = localStorage.getItem('id') || null;
@@ -12,19 +32,25 @@ function startGame(e, socket) {
 
     pauseGame('Aguardando Oponente...');
 
-    socket.on('start', body => {
-        game.setPlayer(body.startPlayer);
-        game.start();
+    socketStart(socket, game, modal);
+    socketUpdate(socket, game);
+    socketMessage(socket);
+}
 
-        localStorage.setItem('room', body.room);
-        modal.style.display = 'none';
-    });
+function PlayBot(socket) {
+    const id = localStorage.getItem('id') || null;
+    const game = new GameManager('y', socket, id, true);
+    const modal = document.querySelector(".modal");
+    const content = document.querySelector('.modal__content');
+    
+    game.transport.emit('bot', JSON.stringify({ player: game.localPlayer, id: game.id }));
+    content.style.display = 'none';
 
-    socket.on('update', body => {
-        game.update(JSON.parse(body));
-    });
+    pauseGame('Aguardando Oponente...');
 
-    socket.on('message', body => appendMessage(body.message, body.id));
+    socketStart(socket, game, modal);
+    socketUpdate(socket, game);
+    socketMessage(socket);
 }
 
 function appendMessage(message, id) {
@@ -100,14 +126,18 @@ function sendMessage(socket) {
 }
 
 function resetStorage() {
-    localStorage.removeItem('room');
-    localStorage.removeItem('id');
+    const entries = Object.keys(localStorage);
+
+    for(let entry of entries) {
+        localStorage.removeItem(entry);
+    }
 }
 
 window.onload = () => {
     const socket = io(window.location.href);
     const buttonYellow = document.querySelector(".modal__button--yellow");
     const buttonRed = document.querySelector(".modal__button--red");
+    const buttonBot = document.querySelector(".modal__button--bot");
     const buttonSend = document.querySelector('.message-box__input button');
 
     resetStorage();
@@ -115,5 +145,6 @@ window.onload = () => {
 
     buttonYellow.onclick = e => startGame(e, socket);
     buttonRed.onclick = e => startGame(e, socket);
+    buttonBot.onclick = () => PlayBot(socket);
     buttonSend.onclick = () => sendMessage(socket);
 }

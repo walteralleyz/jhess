@@ -74,6 +74,10 @@ html {
     background-color: #c72626;
 }
 
+.modal__content .modal__button--bot {
+    background-color: #ccc;
+}
+
 .container {
     display: flex;
     flex-direction: row;
