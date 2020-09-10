@@ -15,6 +15,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use('/', express.static('./client'));
+app.use('*', (req, res) => {
+    res.status(404).send("404! Página não encontrada.");
+});
 
 let rooms = {};
 
