@@ -34,6 +34,7 @@ export class GameManager extends BlockManager {
             this.clearTable();
             this.notHighLight();
             this.mountChessTable();
+            this.updateKillZone();
             this.showMessage(`Game is end!`);
             this.removeEvent();
         } else {
@@ -47,6 +48,7 @@ export class GameManager extends BlockManager {
             this.notHighLight();
             this.showMessage();
             this.mountChessTable();
+            this.updateKillZone();
             this.isCheck();
         }
     }
