@@ -138,10 +138,20 @@ html {
     color: #eb2929;
 }
 
+.resize {
+    background-color: #333;
+    color: #fff;
+    font-weight: bold;
+    display: none;
+    width: 100%;
+    text-align: center;
+}
+
 .kill-counter {
     width: 250px;
     background-color: #333;
     min-height: calc(100vh - 89px);
+    box-sizing: border-box;
 }
 
 .kill-counter h3 {
@@ -161,14 +171,21 @@ html {
 }
 
 .message-box {
-    width: 95%;
+    max-width: 90vw;
     margin: 0 auto;
 }
 
 .message-box .message-box__content {
     height: 200px;
+    max-width: 100%;
     background-color: #d5dbab;
-    border-radius: 5px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+}
+
+.message-box__content::-webkit-scrollbar {
+    appearance: none;
 }
 
 .message-box__content .text-self {
@@ -183,31 +200,40 @@ html {
     padding: 8px;
 }
 
-.text-self span {
+.text-self p {
     background-color: #73ec60;
     color: #fff;
-    padding: 0 8px;
+    padding: 4px 8px;
+    display: inline-block;
+    word-wrap: break-word;
 }
 
-.text-oponent span {
+.text-oponent p {
     background-color: #233ff1;
     color: #fff;
-    padding: 0 8px;
+    padding: 4px 8px;
+    display: inline-block;
+    word-wrap: break-word;
 }
 
-.message-box .message-box__input {
+.text-oponent p small, .text-self p small {
+    display: block;
+    color: #fff;
+    font-size: 0.7rem;
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+.message-box__input {
     display: flex;
     flex-direction: column;
-    flex-wrap: wrap;
 }
 
 .message-box__input input {
-    flex-grow: 1;
     padding: 8px;
+    border: none;
 }
 
 .message-box__input button {
-    flex-grow: 1;
     border: none;
     box-shadow: none;
     background-color: #333;
@@ -235,9 +261,21 @@ html {
         align-items: center;
     }
 
+    .resize {
+        display: block;
+        padding: 8px 0;
+        transition: 0.3s;
+    }
+
+    .resize:hover {
+        opacity: 0.8;
+        cursor: pointer;
+    }
+
     .kill-counter {
         min-height: 0;
-        width: 100vw;
+        width: 100%;
+        display: none;
     }
 
     .kill-counter .kill-zone {

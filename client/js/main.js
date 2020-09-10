@@ -30,13 +30,16 @@ function startGame(e, socket) {
 function appendMessage(message, id) {
     const content = document.querySelector('.message-box__content');
     const container = document.createElement('div');
-    const span = document.createElement('span');
+    const p = document.createElement('p');
+    const small = document.createElement('small');
     const className = id === localStorage.getItem('id') ? 'text-self' : 'text-oponent';
 
     container.classList.add(className);
-    span.textContent = message;
+    p.textContent = message;
+    small.textContent = new Date().getHours() + ':' + new Date().getMinutes();
 
-    container.appendChild(span);
+    p.appendChild(small);
+    container.appendChild(p);
     content.appendChild(container);
 }
 
@@ -44,7 +47,7 @@ function pauseGame(message) {
     const modal = document.querySelector(".modal");
     const loading = document.querySelector('.modal__loading');
 
-    modal.style.display = 'block';
+    modal.style.display = 'fixed';
     loading.style.display = 'block';
 
     return showLoadingText(message);
@@ -92,6 +95,8 @@ function sendMessage(socket) {
     const input = document.querySelector('.message-box__input input');
 
     socket.emit('message', JSON.stringify({ room, message: input.value, id }));
+
+    input.value = "";
 }
 
 function resetStorage() {

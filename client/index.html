@@ -29,6 +29,7 @@
     </div>
 
     <main class="container">
+        <p class="resize" onclick="resizeKill(event)">Expandir</p>
         <aside class="kill-counter">
             <div id="kill-zone-y" class="kill-zone">
                 <h3 style="color: gold">Y Killzone</h3>
@@ -56,5 +57,14 @@
     <script type="module" src="./js/blockmanager.js"></script>
     <script type="module" src="./js/gamemanager.js"></script>
     <script type="module" src="./js/main.js"></script>
+    <script>
+        function resizeKill(e) {
+            const button = e.currentTarget;
+            const killCounter = document.querySelector('.kill-counter');
+
+            killCounter.style.display = button.textContent === 'Expandir' ? 'block' : 'none';
+            button.textContent = button.textContent === 'Expandir' ? 'Fechar' : 'Expandir';
+        }
+    </script>
 </body>
 </html>
