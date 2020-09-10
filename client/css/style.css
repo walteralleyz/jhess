@@ -19,7 +19,7 @@ html {
 }
 
 .modal {
-    position: absolute;
+    position: fixed;
     width: 100vw;
     height: 100vh;
     z-index: 1;
@@ -158,6 +158,67 @@ html {
 .kill-zone .mdi {
     color: #fff;
     font-size: 2rem;
+}
+
+.message-box {
+    width: 95%;
+    margin: 0 auto;
+}
+
+.message-box .message-box__content {
+    height: 200px;
+    background-color: #d5dbab;
+    border-radius: 5px;
+}
+
+.message-box__content .text-self {
+    text-align: right;
+}
+
+.message-box__content .text-oponent {
+    text-align: left;
+}
+
+.text-oponent, .text-self {
+    padding: 8px;
+}
+
+.text-self span {
+    background-color: #73ec60;
+    color: #fff;
+    padding: 0 8px;
+}
+
+.text-oponent span {
+    background-color: #233ff1;
+    color: #fff;
+    padding: 0 8px;
+}
+
+.message-box .message-box__input {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+.message-box__input input {
+    flex-grow: 1;
+    padding: 8px;
+}
+
+.message-box__input button {
+    flex-grow: 1;
+    border: none;
+    box-shadow: none;
+    background-color: #333;
+    color: #fff;
+    padding: 16px;
+    transition: 0.4s;
+}
+
+.message-box__input button:hover {
+    background-color: #ccc;
+    color: #000;
 }
 
 @keyframes boxLight {

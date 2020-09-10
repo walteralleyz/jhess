@@ -13,6 +13,8 @@ class BlockManager extends Game {
 
     kill(row, block, target) {
         this.killZone[this.player] = [...this.killZone[this.player], target];
+
+        this.clearBlock(row, block);
     }
 
     move(row, block) {

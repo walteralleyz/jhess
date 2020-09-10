@@ -20,24 +20,39 @@ export class GameManager extends BlockManager {
         this.resetLocalStorage();
     }
 
-    emit(type, message) {
-        this.transport.emit(type, message);
-    }
+    update(body) {
+        if(body.type === 'error') {
+            if(this.localPlayer === this.player) return alert(body.message);
+            return false;
+        }
+        else if(body.type === 'end') {
+            const { matrix, killZone } = body.message;
 
-    update() {
-        if(this.isKing()) {
+            this.matrix = matrix;
+            this.killZone = killZone;
+            
             this.clearTable();
             this.notHighLight();
             this.mountChessTable();
             this.showMessage(`Game is end!`);
             this.removeEvent();
         } else {
+            const { matrix, killZone } = body.message;
+
+            this.matrix = matrix;
+            this.killZone = killZone;
+
+            this.changePlayer();
             this.clearTable();
             this.notHighLight();
             this.showMessage();
             this.mountChessTable();
             this.isCheck();
         }
+    }
+
+    setPlayer(player) {
+        this.player = player;
     }
 
     resetLocalStorage() {
@@ -60,92 +75,31 @@ export class GameManager extends BlockManager {
         }
     }
 
-    isKing() {
-        const enemy = this.player === 'y' ? 'r' : 'y';
-        const king = this.killZone[enemy].indexOf(`${this.player}-king`) !== -1;
-
-        return king;
-    }
-
     changePlayer() {
-        this.player = this.player == "y" ? "r" : "y";
+        this.player = this.player === "y" ? "r" : "y";
         this.selected = {
             color: "",
             piece: "",
             row: 0,
             col: 0,
         };
-
-        this.update();
-    }
-
-    canMove(piece, move, block, row, selected, matrix) {
-        return this.moves.moveRules(
-            piece,
-            block.getAttribute("index"),
-            row.getAttribute("index"),
-            move,
-            selected,
-            matrix
-        )();
     }
 
     select(e) {
         if(this.localPlayer === this.player) {
-            const block = e.currentTarget;
-            const row = block.parentNode;
+            const block = e.currentTarget.getAttribute('index');
+            const row = e.currentTarget.parentNode.getAttribute('index');
             const child = this.isFilled(row, block);
+
+            this.transport.emit('move', JSON.stringify({ boxIndex: block, rowIndex: row, roomId: localStorage.getItem('room') }));
 
             if (child) {
                 const [color, chess] = child.split("-");
 
-                if (color === this.player) {
-                    this.selected.color = color;
-                    this.selected.piece = chess;
-                    this.selected.col = block.getAttribute("index");
-                    this.selected.row = row.getAttribute("index");
-
-                    this.highLight(this.selected.piece, this.selected.row, this.selected.col);
-                } else if (this.selected.piece) {
-                    if (
-                        this.canMove(
-                            this.selected.piece,
-                            "kill",
-                            block,
-                            row,
-                            this.selected,
-                            this.matrix
-                        )
-                    ) {
-                        this.kill(row, block, child);
-                        this.changePlayer();
-
-                        return false;
-                    }
-                }
-
-                return false;
-            } else if (this.selected.piece) {
-                if (
-                    this.canMove(
-                        this.selected.piece,
-                        "move",
-                        block,
-                        row,
-                        this.selected,
-                        this.matrix
-                    )
-                ) {
-                    this.move(row, block);
-                    this.changePlayer();
-
-                    return false;
-                }
+                if (color === this.player) this.highLight(chess, row, block);
             }
-
-            alert("Cant move this way!");
         }
-        }
+    }
 
     getSelected() {
         return localStorage.getItem("selected");

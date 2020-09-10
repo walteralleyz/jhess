@@ -7,16 +7,37 @@ function startGame(e, socket) {
     const modal = document.querySelector(".modal");
     const content = document.querySelector('.modal__content');
     
-    game.emit('join', JSON.stringify({ player: game.localPlayer, id: game.id }));
+    game.transport.emit('join', JSON.stringify({ player: game.localPlayer, id: game.id }));
     content.style.display = 'none';
 
     pauseGame('Aguardando Oponente...');
 
     socket.on('start', body => {
+        game.setPlayer(body.startPlayer);
         game.start();
-        localStorage.setItem('room', body);
+
+        localStorage.setItem('room', body.room);
         modal.style.display = 'none';
     });
+
+    socket.on('update', body => {
+        game.update(JSON.parse(body));
+    });
+
+    socket.on('message', body => appendMessage(body.message, body.id));
+}
+
+function appendMessage(message, id) {
+    const content = document.querySelector('.message-box__content');
+    const container = document.createElement('div');
+    const span = document.createElement('span');
+    const className = id === localStorage.getItem('id') ? 'text-self' : 'text-oponent';
+
+    container.classList.add(className);
+    span.textContent = message;
+
+    container.appendChild(span);
+    content.appendChild(container);
 }
 
 function pauseGame(message) {
@@ -59,17 +80,35 @@ function connection(socket, interval) {
         content.style.display = 'block';
 
         clearInterval(interval);
+
+        socket.emit('id', 'id');
     });
-    socket.on('id', body => localStorage.setItem('id', body.id));
+    socket.on('id', body => localStorage.getItem('id') === null && localStorage.setItem('id', body.id));
+}
+
+function sendMessage(socket) {
+    const room = localStorage.getItem('room');
+    const id = localStorage.getItem('id');
+    const input = document.querySelector('.message-box__input input');
+
+    socket.emit('message', JSON.stringify({ room, message: input.value, id }));
+}
+
+function resetStorage() {
+    localStorage.removeItem('room');
+    localStorage.removeItem('id');
 }
 
 window.onload = () => {
     const socket = io(window.location.href);
     const buttonYellow = document.querySelector(".modal__button--yellow");
     const buttonRed = document.querySelector(".modal__button--red");
+    const buttonSend = document.querySelector('.message-box__input button');
 
+    resetStorage();
     connection(socket, pauseGame('Carregando...'));
 
     buttonYellow.onclick = e => startGame(e, socket);
     buttonRed.onclick = e => startGame(e, socket);
+    buttonSend.onclick = () => sendMessage(socket);
 }

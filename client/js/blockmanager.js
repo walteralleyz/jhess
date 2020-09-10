@@ -38,7 +38,7 @@ export class BlockManager extends Game {
 
     clearBlock(row, block) {
         this.matrix[this.selected.row][this.selected.col] = 0;
-        this.matrix[row.getAttribute("index")][block.getAttribute("index")] =
+        this.matrix[row][block] =
             this.selected.color + "-" + this.selected.piece;
     }
 
@@ -54,8 +54,8 @@ export class BlockManager extends Game {
     }
 
     isFilled(row, block) {
-        return this.matrix[row.getAttribute("index")][
-            block.getAttribute("index")
+        return this.matrix[row][
+            block
         ];
     }
 }

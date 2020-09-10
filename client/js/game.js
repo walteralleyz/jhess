@@ -22,7 +22,7 @@ export class Game {
         Array.from(this.pieces, (piece) => "r-" + piece),
     ];
 
-    player = "y";
+    player;
     selected = {
         color: this.player,
         piece: "",
