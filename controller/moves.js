@@ -51,11 +51,17 @@ class Moves {
         ({
             pawn: () => {
                 const increment = selected.color === "y" ? 1 : -1;
+                const doubleIncrement = selected.color === "y" ? 2 : -2;
                 const boxIncrement = Math.abs(bIndex - selected.col);
 
                 if (action === "move") {
-                    if (+rIndex !== +selected.row + increment) return false;
                     if (boxIncrement !== 0) return false;
+                    if ((selected.color === 'y' && +selected.row === 1) && +rIndex === +selected.row + doubleIncrement)
+                        return true && this.pawnBlocked(rIndex, bIndex, matrix);
+
+                    if ((selected.color === 'r' && +selected.row === 6) && +rIndex === +selected.row + doubleIncrement) 
+                        return true && this.pawnBlocked(rIndex, bIndex, matrix);
+                    if (+rIndex !== +selected.row + increment) return false;
 
                     return true && this.pawnBlocked(rIndex, bIndex, matrix);
                 } else {

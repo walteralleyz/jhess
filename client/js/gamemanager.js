@@ -14,7 +14,7 @@ export class GameManager extends BlockManager {
     localPlayer;
     id;
     transport;
-    bot;
+    bot = false;
     botSelected = false;
 
     start() {
@@ -55,7 +55,7 @@ export class GameManager extends BlockManager {
             this.rebuild();
             this.isCheck();
 
-            if(this.localPlayer !== this.player) this.selectBot();
+            if(this.localPlayer !== this.player && this.bot) this.selectBot();
         }
     }
 
