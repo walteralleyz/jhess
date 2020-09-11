@@ -8,7 +8,7 @@ const uuid = require('uuid');
 
 const port = process.env.PORT || 3000;
 const GameManager = require('./controller/gamemanager');
-const { join, move, message, sendId, bot } = require('./controller/socket');
+const { join, move, message, sendId, bot, off } = require('./controller/socket');
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -20,9 +20,19 @@ app.use('*', (req, res) => {
 });
 
 let rooms = {};
+let numConnected = 0;
 
 function emitStart(room, startPlayer) {
     io.to(room).emit('start', { room, startPlayer});
+}
+
+function changeNum(num) {
+    if(num < 0 && numConnected === 0) {
+        numConnected = 0;
+    }
+    else numConnected += num;
+
+    return numConnected;
 }
 
 io.on('connection', (socket) => {
@@ -32,6 +42,9 @@ io.on('connection', (socket) => {
     bot(socket, rooms, GameManager, io, emitStart);
     move(socket, rooms);
     message(socket, io);
+    off(socket, io, changeNum);
+
+    io.emit('clients', { len: changeNum(1) });
 });
 
 http.listen(port, () => console.log('Listen!'));

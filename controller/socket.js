@@ -50,8 +50,10 @@ exports.create = (socket, container, room, body, io, Game, next) => {
                     status: 'open',
                     game: null
                 };
-            };
+            }
         }
+
+        this.quit(socket, io);
     });
 }
 
@@ -74,5 +76,19 @@ exports.message = (socket, io) => {
 exports.sendId = (socket, io, uuid) => {
     socket.on('id', () => {
         io.emit('id', {id: uuid.v1().substr(0, 4) + Date.now() + new Date().getSeconds()});
+    });
+}
+
+exports.off = (socket, io, next) => {
+    socket.on('disconnect', () => {
+        io.emit('clients', { len: next(-1) });
+    });
+}
+
+exports.quit = (socket, io) => {
+    socket.on('disconnecting', () => {
+        const room = Object.keys(socket.rooms)[1];
+        
+        io.to(room).emit('off', { status: 'off' });
     });
 }

@@ -17,7 +17,15 @@ function socketUpdate(socket, game) {
 }
 
 function socketMessage(socket) {
-    socket.on('message', body => appendMessage(body.message, body.id));
+    socket.on('message', body => appendMessage(body.message, false, body.id));
+}
+
+function socketClients(socket) {
+    socket.on('clients', body => updateNumClients(body.len));
+}
+
+function socketDisconnect(socket) {
+    socket.on('off', body => appendMessage('Oponente Desconectou', true));
 }
 
 function startGame(e, socket) {
@@ -53,12 +61,16 @@ function PlayBot(socket) {
     socketMessage(socket);
 }
 
-function appendMessage(message, id) {
+function appendMessage(message, off, id) {
     const content = document.querySelector('.message-box__content');
     const container = document.createElement('div');
     const p = document.createElement('p');
     const small = document.createElement('small');
-    const className = id === localStorage.getItem('id') ? 'text-self' : 'text-oponent';
+
+    let className;
+
+    if(!off) className = id === localStorage.getItem('id') ? 'text-self' : 'text-oponent';
+    else className = 'text-off';
 
     container.classList.add(className);
     p.textContent = message;
@@ -67,6 +79,14 @@ function appendMessage(message, id) {
     p.appendChild(small);
     container.appendChild(p);
     content.appendChild(container);
+
+    container.scrollIntoView();
+}
+
+function updateNumClients(total) {
+    const clients = document.querySelector('.clients');
+
+    clients.textContent = `Conectados: ${total}`;
 }
 
 function pauseGame(message) {
@@ -140,6 +160,8 @@ window.onload = () => {
     const buttonBot = document.querySelector(".modal__button--bot");
     const buttonSend = document.querySelector('.message-box__input button');
 
+    socketClients(socket);
+    socketDisconnect(socket);
     resetStorage();
     connection(socket, pauseGame('Carregando...'));
 

@@ -18,6 +18,10 @@ html {
     padding: 0 8px;
 }
 
+.message .clients {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
 .modal {
     position: fixed;
     width: 100vw;
@@ -200,7 +204,11 @@ html {
     text-align: left;
 }
 
-.text-oponent, .text-self {
+.message-box__content .text-off {
+    text-align: center;
+}
+
+.text-oponent, .text-self, .text-off {
     padding: 8px;
 }
 
@@ -220,11 +228,23 @@ html {
     word-wrap: break-word;
 }
 
+.text-off p {
+    background-color: #9b9b9b;
+    color: #fff;
+    padding: 4px 8px;
+    display: inline-block;
+    word-wrap: break-word;
+}
+
 .text-oponent p small, .text-self p small {
     display: block;
     color: #fff;
     font-size: 0.7rem;
     text-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+.text-off p small {
+    display: none;
 }
 
 .message-box__input {
